@@ -24,12 +24,16 @@ export class SocketIOHandler {
   constructor(server: HttpServer) {
     this.io = new SocketIOServer(server, {
       cors: {
-        origin: process.env.CORS_ORIGIN || '*',
+        origin: [
+          'https://websocket-client-eight.vercel.app',
+          'http://localhost:3000',
+          process.env.CORS_ORIGIN || '*',
+        ],
         methods: ['GET', 'POST', 'OPTIONS'],
         credentials: true,
         allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
       },
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
       allowEIO3: true,
       pingTimeout: 60000,
       pingInterval: 25000,
