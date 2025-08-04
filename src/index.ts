@@ -22,6 +22,8 @@ app.use(
       'https://websocket-client-eight.vercel.app',
       'http://localhost:3000',
       'https://localhost:3000',
+      'http://localhost:3001',
+      'https://localhost:3001',
       config.corsOrigin,
     ].filter((origin): origin is string => typeof origin === 'string'),
     credentials: true,
@@ -34,10 +36,21 @@ app.use(express.static(path.join(__dirname, '../public')))
 
 // Обработка OPTIONS запросов для CORS
 app.options('*', (req, res) => {
-  res.header(
-    'Access-Control-Allow-Origin',
-    'https://websocket-client-eight.vercel.app'
-  )
+  const origin = req.headers.origin
+  const allowedOrigins = [
+    'https://websocket-client-eight.vercel.app',
+    'http://localhost:3000',
+    'https://localhost:3000',
+    'http://localhost:3001',
+    'https://localhost:3001',
+  ]
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin)
+  } else {
+    res.header('Access-Control-Allow-Origin', '*')
+  }
+
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   res.header(
     'Access-Control-Allow-Headers',
@@ -48,10 +61,21 @@ app.options('*', (req, res) => {
 
 // Дополнительный middleware для CORS
 app.use((req, res, next) => {
-  res.header(
-    'Access-Control-Allow-Origin',
-    'https://websocket-client-eight.vercel.app'
-  )
+  const origin = req.headers.origin
+  const allowedOrigins = [
+    'https://websocket-client-eight.vercel.app',
+    'http://localhost:3000',
+    'https://localhost:3000',
+    'http://localhost:3001',
+    'https://localhost:3001',
+  ]
+
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin)
+  } else {
+    res.header('Access-Control-Allow-Origin', '*')
+  }
+
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   res.header(
     'Access-Control-Allow-Headers',
@@ -99,6 +123,28 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
     connectedUsers: socketHandler.getConnectedUsersCount(),
     connectedClients: 0, // webSocketHandler.getConnectedClientsCount(),
+  })
+})
+
+// Специальный endpoint для проверки Socket.IO
+app.get('/socket-health', (req, res) => {
+  res.json({
+    status: 'socket-healthy',
+    timestamp: new Date().toISOString(),
+    socketIO: {
+      connected: true,
+      transports: ['polling'],
+      path: '/socket.io/',
+    },
+    cors: {
+      origins: [
+        'https://websocket-client-eight.vercel.app',
+        'http://localhost:3000',
+        'https://localhost:3000',
+        'http://localhost:3001',
+        'https://localhost:3001',
+      ],
+    },
   })
 })
 
@@ -258,7 +304,9 @@ if (process.env.NODE_ENV !== 'production') {
   server.listen(config.port, () => {
     console.log('🚀 Server started successfully!')
     console.log(`📍 HTTP server running on: http://localhost:${config.port}`)
-    console.log(`🔌 Socket.IO server running on: http://localhost:${config.port}`)
+    console.log(
+      `🔌 Socket.IO server running on: http://localhost:${config.port}`
+    )
     console.log(`💬 Chat available at: http://localhost:${config.port}`)
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
   })

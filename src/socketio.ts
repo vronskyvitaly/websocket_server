@@ -28,6 +28,8 @@ export class SocketIOHandler {
           'https://websocket-client-eight.vercel.app',
           'http://localhost:3000',
           'https://localhost:3000',
+          'http://localhost:3001',
+          'https://localhost:3001',
           process.env.CORS_ORIGIN ||
             'https://websocket-client-eight.vercel.app',
         ],
