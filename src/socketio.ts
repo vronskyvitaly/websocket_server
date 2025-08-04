@@ -27,18 +27,21 @@ export class SocketIOHandler {
         origin: [
           'https://websocket-client-eight.vercel.app',
           'http://localhost:3000',
-          process.env.CORS_ORIGIN || '*',
+          'https://localhost:3000',
+          process.env.CORS_ORIGIN ||
+            'https://websocket-client-eight.vercel.app',
         ],
         methods: ['GET', 'POST', 'OPTIONS'],
         credentials: true,
         allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
       },
-      transports: ['polling', 'websocket'],
+      transports: ['polling'], // Только polling для Vercel
       allowEIO3: true,
       pingTimeout: 60000,
       pingInterval: 25000,
       upgradeTimeout: 10000,
       maxHttpBufferSize: 1e6,
+      path: '/socket.io/',
     })
 
     this.db = new DatabaseService()

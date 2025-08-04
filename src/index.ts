@@ -8,7 +8,8 @@ import { ServerConfig } from './types'
 
 const config: ServerConfig = {
   port: parseInt(process.env.PORT || '3002', 10),
-  corsOrigin: process.env.CORS_ORIGIN || '*',
+  corsOrigin:
+    process.env.CORS_ORIGIN || 'https://websocket-client-eight.vercel.app',
 }
 
 const app = express()
@@ -17,7 +18,12 @@ const server = createServer(app)
 // Middleware
 app.use(
   cors({
-    origin: config.corsOrigin,
+    origin: [
+      'https://websocket-client-eight.vercel.app',
+      'http://localhost:3000',
+      'https://localhost:3000',
+      config.corsOrigin,
+    ].filter((origin): origin is string => typeof origin === 'string'),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
@@ -25,6 +31,34 @@ app.use(
 )
 app.use(express.json())
 app.use(express.static(path.join(__dirname, '../public')))
+
+// Обработка OPTIONS запросов для CORS
+app.options('*', (req, res) => {
+  res.header(
+    'Access-Control-Allow-Origin',
+    'https://websocket-client-eight.vercel.app'
+  )
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, X-Requested-With'
+  )
+  res.sendStatus(200)
+})
+
+// Дополнительный middleware для CORS
+app.use((req, res, next) => {
+  res.header(
+    'Access-Control-Allow-Origin',
+    'https://websocket-client-eight.vercel.app'
+  )
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, X-Requested-With'
+  )
+  next()
+})
 
 // Инициализация Socket.IO
 const socketHandler = new SocketIOHandler(server)
@@ -65,6 +99,15 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
     connectedUsers: socketHandler.getConnectedUsersCount(),
     connectedClients: 0, // webSocketHandler.getConnectedClientsCount(),
+  })
+})
+
+// Тестовый endpoint для проверки CORS
+app.get('/test-cors', (req, res) => {
+  res.json({
+    message: 'CORS test successful',
+    timestamp: new Date().toISOString(),
+    origin: req.headers.origin,
   })
 })
 
