@@ -250,35 +250,37 @@ app.use('*', (req, res) => {
   })
 })
 
-// Запуск сервера
-server.listen(config.port, () => {
-  console.log('🚀 Server started successfully!')
-  console.log(`📍 HTTP server running on: http://localhost:${config.port}`)
-  console.log(`🔌 Socket.IO server running on: http://localhost:${config.port}`)
-  console.log(`💬 Chat available at: http://localhost:${config.port}`)
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
-})
+// Экспорт для Vercel serverless функций
+export default app
 
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('📴 SIGTERM received, shutting down gracefully')
-  server.close(async () => {
-    await socketHandler.close()
-    // webSocketHandler.close()
-    console.log('✅ Process terminated')
-    process.exit(0)
+// Запуск сервера только в development режиме
+if (process.env.NODE_ENV !== 'production') {
+  server.listen(config.port, () => {
+    console.log('🚀 Server started successfully!')
+    console.log(`📍 HTTP server running on: http://localhost:${config.port}`)
+    console.log(`🔌 Socket.IO server running on: http://localhost:${config.port}`)
+    console.log(`💬 Chat available at: http://localhost:${config.port}`)
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`)
   })
-})
 
-process.on('SIGINT', async () => {
-  console.log('📴 SIGINT received, shutting down gracefully')
-  server.close(async () => {
-    await socketHandler.close()
-    // webSocketHandler.close()
-    console.log('✅ Process terminated')
-    process.exit(0)
+  // Graceful shutdown
+  process.on('SIGTERM', async () => {
+    console.log('📴 SIGTERM received, shutting down gracefully')
+    server.close(async () => {
+      await socketHandler.close()
+      // webSocketHandler.close()
+      console.log('✅ Process terminated')
+      process.exit(0)
+    })
   })
-})
 
-//
-//
+  process.on('SIGINT', async () => {
+    console.log('📴 SIGINT received, shutting down gracefully')
+    server.close(async () => {
+      await socketHandler.close()
+      // webSocketHandler.close()
+      console.log('✅ Process terminated')
+      process.exit(0)
+    })
+  })
+}
